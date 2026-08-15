@@ -1,0 +1,12 @@
+@title Quick Example
+
+You wake up in a dark room. There is a [[door]] to the north and a [[window]] to the east.
+
+[[door]]:
+You open the door and step into a hallway. A [torch] flickers on the wall.
+
+[torch]:
+You grab the torch. It illuminates the hallway, revealing a staircase leading down.
+
+[[window]]:
+You look through the window. Moonlight streams in, but the glass is too thick to break.

@@ -1,0 +1,19 @@
+{
+  "name": "story-site",
+  "version": "0.0.0",
+  "private": true,
+  "description": "A site for publishing interactive fiction, instructions, and guides built with Squiffy.",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "serve": "node scripts/serve.mjs",
+    "preview": "npm run build && npm run serve"
+  },
+  "devDependencies": {
+    "@textadventures/squiffy-cli": "6.0.0-beta.2"
+  }
+}
