@@ -38,15 +38,29 @@ function sha256Base64(text) {
   return createHash('sha256').update(text, 'utf8').digest('base64');
 }
 
-/** Build a strict CSP string. `scriptHashes` is empty for pages with no inline script. */
-function buildCsp(scriptHashes) {
-  const scriptSrc = scriptHashes.length
-    ? `'self' ${scriptHashes.map((h) => `'sha256-${h}'`).join(' ')}`
-    : "'none'";
+/**
+ * Build a strict CSP string. `scriptHashes` is empty for pages with no inline
+ * script. `runtime: true` opens the two directives squiffy-runtime's bundled
+ * dependencies need on every page they run on, regardless of story content:
+ * - 'unsafe-eval' on script-src - it bundles Handlebars, which compiles
+ *   templates (dynamic text, conditionals) with `new Function()`.
+ * - 'unsafe-inline' on style-src - an accessibility helper assigns
+ *   `element.style.cssText` to build a visually-hidden screen-reader span.
+ * Pages that never load the runtime (the static site index) don't need either.
+ */
+function buildCsp(scriptHashes, { runtime = false } = {}) {
+  let scriptSrc = "'none'";
+  if (scriptHashes.length) {
+    const parts = ["'self'"];
+    if (runtime) parts.push("'unsafe-eval'");
+    parts.push(...scriptHashes.map((h) => `'sha256-${h}'`));
+    scriptSrc = parts.join(' ');
+  }
+  const styleSrc = runtime ? "'self' 'unsafe-inline'" : "'self'";
   return [
     "default-src 'none'",
     `script-src ${scriptSrc}`,
-    "style-src 'self'",
+    `style-src ${styleSrc}`,
     "img-src 'self'",
     "connect-src 'none'",
     "base-uri 'none'",
@@ -55,7 +69,7 @@ function buildCsp(scriptHashes) {
 }
 
 /** Read an HTML file, hash its inline <script> blocks, and inject a CSP <meta> tag into <head>. */
-function applyCsp(htmlPath) {
+function applyCsp(htmlPath, { runtime = false } = {}) {
   let html = readFileSync(htmlPath, 'utf8');
 
   const hashes = [];
@@ -63,7 +77,7 @@ function applyCsp(htmlPath) {
     hashes.push(sha256Base64(match[1]));
   }
 
-  const csp = buildCsp(hashes);
+  const csp = buildCsp(hashes, { runtime });
   const metaTag = `<meta http-equiv="Content-Security-Policy" content="${csp}">`;
 
   if (!html.includes('<head>')) {
@@ -100,7 +114,7 @@ function buildStory(slug) {
     rmSync(from);
   }
 
-  applyCsp(path.join(outDir, 'index.html'));
+  applyCsp(path.join(outDir, 'index.html'), { runtime: true });
 }
 
 function buildSite() {

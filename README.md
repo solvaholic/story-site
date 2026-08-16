@@ -31,8 +31,12 @@ npm run preview   # build + serve in one step
 GitHub Pages serves no custom HTTP response headers, so CSP has to travel as a `<meta http-equiv="Content-Security-Policy">` tag in each page. The build script:
 
 - Computes a `sha256-` hash of Squiffy's generated inline bootstrap script and allows only that exact script by hash, instead of a broader `'unsafe-inline'`.
-- Sets `default-src 'none'` and only opens `script-src`, `style-src`, and `img-src` to `'self'` (plus the story's script hash).
-- Applies the same policy to the static site shell.
+- Sets `default-src 'none'` and only opens `script-src`, `style-src`, and `img-src` to `'self'` (plus the story's script hash), except for two directives `squiffy-runtime` itself requires on any page that loads it, regardless of story content:
+  - `script-src 'unsafe-eval'` - the runtime bundles Handlebars, which compiles templates (dynamic text, conditionals) with `new Function()`.
+  - `style-src 'unsafe-inline'` - an accessibility helper assigns `element.style.cssText` to build a visually-hidden screen-reader span.
+- Applies the stricter policy (no `unsafe-eval`, no `unsafe-inline`) to the static site shell, which never loads the runtime.
+
+Both loosened directives were found by actually loading a compiled story in a browser and reading the console error, not by inspecting the generated HTML alone - a hash-only check on the bootstrap script isn't sufficient to catch CSP violations the runtime itself triggers once it starts running. Load `npm run preview` and click through a story after any CSP or Squiffy-version change.
 
 All stories currently share one origin and one CSP; this may change later if a story needs a materially different trust boundary (e.g., handling sensitive data).
 
