@@ -54,6 +54,7 @@ All actions are pinned to exact commit SHAs (not tags), and the two jobs' permis
 - `@textadventures/squiffy-cli` is pinned to an exact version in `package.json`, with `package-lock.json` committed and reviewed.
 - Builds use `npm ci`, never a version-resolving install.
 - `.squiffy` files are treated as executable source: embedded JavaScript and any external resources they reference get reviewed before merging.
+- `.github/dependabot.yml` proposes npm and GitHub Actions updates as pull requests on a weekly schedule. Dependabot never auto-merges - a human always reviews and merges. Ordinary updates just need to pass CI; a `@textadventures/squiffy-cli` update additionally needs a deliberate manual review of its release notes, resolved dependency changes, provenance, generated output, and the CSP assumptions in `scripts/build.mjs`, since it's the one dependency that generates code this site ships to visitors.
 
 ## Licensing
 
