@@ -54,7 +54,10 @@ const server = createServer(async (req, res) => {
   // index.html), not the request URL's - a directory URL has no extension.
   const ext = path.extname(resolved.filePath);
   const contentType = ext ? MIME_TYPES[ext] || 'application/octet-stream' : 'text/plain; charset=utf-8';
-  res.writeHead(200, { 'Content-Type': contentType });
+  // This server exists to preview builds that change on every `npm run
+  // build`, so never let the browser reuse a cached response from a prior
+  // build - that reads as the fix not having worked.
+  res.writeHead(200, { 'Content-Type': contentType, 'Cache-Control': 'no-store' });
   res.end(resolved.body);
 });
 
