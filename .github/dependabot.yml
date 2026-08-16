@@ -1,0 +1,35 @@
+# Dependabot proposes dependency updates as pull requests; it never merges
+# them (there is no auto-merge workflow in this repo, and none should be
+# added). A human always reviews and merges.
+#
+# Ordinary updates just need to pass the build/preview checks in
+# .github/workflows/deploy.yml before merging.
+#
+# @textadventures/squiffy-cli is the one dependency that generates code this
+# site ships to visitors, so a PR updating it needs a deliberate manual
+# review beyond green CI: the upstream release notes, what else moved in
+# package-lock.json underneath it, provenance, a diff of the actual
+# generated build output, and whether the CSP in scripts/build.mjs still
+# covers what the new runtime does. See the README's Supply chain section.
+
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "chore"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "chore"
