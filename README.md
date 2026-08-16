@@ -40,6 +40,15 @@ Both loosened directives were found by actually loading a compiled story in a br
 
 All stories currently share one origin and one CSP; this may change later if a story needs a materially different trust boundary (e.g., handling sensitive data).
 
+## Continuous integration and deployment
+
+`.github/workflows/deploy.yml` runs on every push and pull request:
+
+- **`build`** (unprivileged: `contents: read` only) runs `npm ci` and `npm run build`, then uploads `dist/` as a Pages artifact. Runs on pushes, pull requests, and manual dispatch, so a PR gets a build check without needing deployment credentials.
+- **`deploy`** (`pages: write`, `id-token: write`) only runs on pushes to `main`. It deploys the artifact `build` already produced - it never checks out the repository or runs any story build script itself.
+
+All actions are pinned to exact commit SHAs (not tags), and the two jobs' permissions are scoped separately so a build-time compromise has no path to deployment credentials.
+
 ## Supply chain
 
 - `@textadventures/squiffy-cli` is pinned to an exact version in `package.json`, with `package-lock.json` committed and reviewed.
@@ -53,4 +62,4 @@ All stories currently share one origin and one CSP; this may change later if a s
 
 ## Status
 
-This repository is being scaffolded incrementally. Remaining work includes GitHub Actions build/deploy jobs, Dependabot configuration for the pinned Squiffy dependency, and deployment verification.
+This repository is being scaffolded incrementally. Remaining work includes Dependabot configuration for the pinned Squiffy dependency and deployment verification.
