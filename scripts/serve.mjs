@@ -33,7 +33,8 @@ async function resolveFile(urlPath) {
   }
 
   try {
-    return await readFile(filePath);
+    const body = await readFile(filePath);
+    return { body, filePath };
   } catch {
     return null;
   }
@@ -41,18 +42,20 @@ async function resolveFile(urlPath) {
 
 const server = createServer(async (req, res) => {
   const url = new URL(req.url, `http://localhost:${port}`);
-  const body = await resolveFile(url.pathname);
+  const resolved = await resolveFile(url.pathname);
 
-  if (!body) {
+  if (!resolved) {
     res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
     res.end('Not found');
     return;
   }
 
-  const ext = path.extname(url.pathname);
+  // Use the resolved file's extension (e.g. a directory request resolves to
+  // index.html), not the request URL's - a directory URL has no extension.
+  const ext = path.extname(resolved.filePath);
   const contentType = ext ? MIME_TYPES[ext] || 'application/octet-stream' : 'text/plain; charset=utf-8';
   res.writeHead(200, { 'Content-Type': contentType });
-  res.end(body);
+  res.end(resolved.body);
 });
 
 server.listen(port, () => {
